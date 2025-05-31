@@ -148,6 +148,35 @@
             line-height: 1.5;
         }
 
+        .wiggle-easter-egg {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25;
+            color: white;
+            text-align: center;
+            font-family: 'Arial', sans-serif;
+            font-size: 3rem;
+            font-weight: bold;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            animation: wiggleShake 0.5s ease-in-out infinite alternate;
+        }
+
+        .wiggle-subtitle {
+            font-size: 1.5rem;
+            font-weight: normal;
+            margin-top: 0.5rem;
+        }
+
+        @keyframes wiggleShake {
+            0% { transform: translate(-50%, -50%) rotate(-2deg); }
+            100% { transform: translate(-50%, -50%) rotate(2deg); }
+        }
+
         .video-fade-white {
             filter: brightness(1) contrast(1);
             transition: filter 0.8s ease;
@@ -197,6 +226,17 @@
             <div class="end-message">🪱 Hope you all had a lovely wormy time! 🪱</div>
         </div>
 
+        <div 
+            class="wiggle-easter-egg"
+            :class="{ 'hidden': !isExtraWiggly }"
+        >
+            🪱 Extra wiggly! 🪱<br>
+            <div class="wiggle-subtitle">
+                Wow you're so impressively wiggly!<br>
+                (You've done {{ wiggleCount }} wiggles!)
+            </div>
+        </div>
+
         <div class="scroll-trigger-area"></div>
         <div class="scroll-spacer"></div>
     </div>
@@ -209,6 +249,10 @@
                 const videoPlayer = ref(null);
                 const hasStartedScrolling = ref(false);
                 const hasReachedEnd = ref(false);
+                const isExtraWiggly = ref(false);
+                const wiggleCount = ref(0);
+                let lastScrollDirection = null;
+                let wiggleTimeout = null;
 
                 onMounted(async () => {
                     await nextTick();
@@ -216,11 +260,32 @@
                     console.log('Component mounted, hasStartedScrolling:', hasStartedScrolling.value);
                     
                     // Scroll detection for showing/hiding UI elements
+                    let lastScrollTop = 0;
                     window.addEventListener('scroll', () => {
                         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                         const scrollHeight = document.documentElement.scrollHeight;
                         const clientHeight = document.documentElement.clientHeight;
                         const scrollBottom = scrollHeight - (scrollTop + clientHeight);
+                        
+                        // Detect scroll direction changes for wiggle easter egg
+                        const currentDirection = scrollTop > lastScrollTop ? 'down' : 'up';
+                        if (lastScrollDirection && lastScrollDirection !== currentDirection) {
+                            wiggleCount.value++;
+                            console.log('Total wiggles:', wiggleCount.value);
+                            
+                            if (wiggleCount.value >= 4 && wiggleCount.value % 4 === 0 && !isExtraWiggly.value) {
+                                console.log('Extra wiggly triggered!');
+                                isExtraWiggly.value = true;
+                                
+                                // Hide after 3 seconds
+                                if (wiggleTimeout) clearTimeout(wiggleTimeout);
+                                wiggleTimeout = setTimeout(() => {
+                                    isExtraWiggly.value = false;
+                                }, 3000);
+                            }
+                        }
+                        lastScrollDirection = currentDirection;
+                        lastScrollTop = scrollTop;
                         
                         if (scrollBottom < 200) {
                             // User is near the bottom - show end overlay
@@ -289,7 +354,9 @@
                 return {
                     videoPlayer,
                     hasStartedScrolling,
-                    hasReachedEnd
+                    hasReachedEnd,
+                    isExtraWiggly,
+                    wiggleCount
                 };
             }
         }).mount('#app');
