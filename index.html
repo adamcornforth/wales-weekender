@@ -119,7 +119,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.95));
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8));
             z-index: 15;
             display: flex;
             flex-direction: column;
@@ -127,28 +127,29 @@
             align-items: center;
             transition: opacity 0.8s ease;
             pointer-events: none;
+            opacity: 0.9;
         }
 
         .end-title {
             font-family: 'Arial', sans-serif;
             font-size: 4rem;
             font-weight: bold;
-            color: #333;
+            color: white;
             margin-bottom: 2rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .end-message {
             font-family: 'Arial', sans-serif;
             font-size: 1.5rem;
-            color: #555;
+            color: white;
             text-align: center;
             max-width: 600px;
             line-height: 1.5;
         }
 
         .video-fade-white {
-            filter: brightness(2) contrast(0.5);
+            filter: brightness(1) contrast(1);
             transition: filter 0.8s ease;
         }
     </style>
@@ -185,7 +186,7 @@
             :class="{ 'hidden': hasStartedScrolling }"
         >
             <div class="scroll-hint-icon">↓</div>
-            <div>Scroll to have a wiggle</div>
+            <div>🪱 Scroll to have a wiggle 🪱</div>
         </div>
 
         <div 
@@ -193,7 +194,7 @@
             :class="{ 'hidden': !hasReachedEnd }"
         >
             <div class="end-title">Thank you!</div>
-            <div class="end-message">Hope you all had a lovely wormy time!</div>
+            <div class="end-message">🪱 Hope you all had a lovely wormy time! 🪱</div>
         </div>
 
         <div class="scroll-trigger-area"></div>
@@ -221,7 +222,7 @@
                         const clientHeight = document.documentElement.clientHeight;
                         const scrollBottom = scrollHeight - (scrollTop + clientHeight);
                         
-                        if (scrollBottom < 100) {
+                        if (scrollBottom < 200) {
                             // User is near the bottom - show end overlay
                             if (!hasReachedEnd.value) {
                                 console.log('User reached end - showing end overlay');
@@ -268,9 +269,10 @@
                                 end: "bottom top",
                                 scrub: 1,
                                 onUpdate: (self) => {
-                                    // Update video time based on scroll progress
+                                    // Update video time based on scroll progress, but stop 1 second from end
                                     const videoDuration = video.duration;
-                                    const newTime = self.progress * videoDuration;
+                                    const maxTime = videoDuration - 1; // Stop 1 second from end
+                                    const newTime = self.progress * maxTime;
                                     
                                     if (!isNaN(newTime)) {
                                         video.currentTime = newTime;
